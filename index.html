@@ -1,0 +1,256 @@
+<!DOCTYPE html> 
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+	<title>Math Busters 101</title> 
+    <link rel="apple-touch-icon" href="appicon.png" />
+    <link rel="manifest" href="manifest.json">
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.css" />
+    <link rel="stylesheet" type="text/css" href="style.css">
+	<script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.js"></script>
+	<script src="http://code.jquery.com/ui/1.8.21/jquery-ui.min.js"></script>
+    <script src="jquery.ui.touch-punch.min.js"></script>
+
+	<script type="text/javascript">
+
+var quizLength = 2;
+var correctAns;
+var numDigits;
+var numArray = []; 
+var eqArray = [];
+var resArray = [];
+var choiceArray = [];
+var sum;
+var eqNum = 1;
+$( init );
+ 
+function init() {
+  // Hide the success message
+  $('#successMessage').hide();
+  $('#successMessage').css( {
+    left: '580px',
+    top: '250px',
+    width: 0,
+    height: 0
+  } );
+ 
+  // Reset the game
+  $('#cardPile').html( '' );
+  $('#cardSlots').html( '' );
+  $( "#seeResults" ).hide();
+  $(".counter").text("equation " + eqNum);
+ 
+  // Create the choice objects
+  var numbers = [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ]; 
+  for ( var i=0; i<10; i++ ) {
+    $('<div>' + numbers[i] + '</div>').data( 'number', numbers[i] ).attr( 'id', 'card'+numbers[i] ).appendTo( '#cardPile' ).addClass('card').draggable( {
+      containment: '#content',
+      stack: '#cardPile div',
+      cursor: 'move',
+      revert: true
+    } );
+  }
+}
+
+function handleCardDrop( event, ui ) {
+  var slotNumber = $(this).data( 'number' );
+  var choiceNumber = ui.draggable.data( 'number' );
+  var choiceArr = [];
+
+/*  make slot update color and text*/
+  $( $(this) ).empty();
+  $( $(this) ).append( choiceNumber );
+  $( $(this) ).addClass( 'highlight' );
+
+  $( this ).attr( 'value', choiceNumber);
+
+sum = 0;
+
+/*check values of all 3 boxes*/
+var done = false;
+var arr = [];
+$(".slot").each( function() {
+	
+	// a default value breaks the loop
+	   if ( $( this ).attr("value")==-1 ) {
+      	return false;
+    	} 
+	//if checked all the choices
+		if($( this ).attr("pos") == getlength(correctAns)){
+			// loop through choices
+			
+			$(".slot").each( function() {
+				// push choices to array
+				choiceArr.push( $( this ).attr("value"))
+			})
+			checkAns(choiceArr);
+		}
+	});
+}
+
+/* *****    End drop function    *******/
+
+function checkAns(arr){
+	
+	var sum = "";
+	for( var i=0; i<arr.length; i++ ){
+		sum += arr[i].toString();
+	
+	}
+	choiceArray.push(sum);
+	
+	// populate results array
+	if(sum == correctAns){
+		resArray.push("right");
+	} else resArray.push("wrong");
+	
+	if(eqNum<quizLength){	
+		eqNum++;  
+		$(".counter").text("equation " + eqNum);
+		genNums();
+	} else {
+		$( "#seeResults" ).show();
+	}
+}
+
+
+function genNums(){
+	
+	var num1 = Math.floor((Math.random() * 99) + 10);
+	var num2 = Math.floor((Math.random() * 99) + 10);
+	correctAns = num1 + num2;
+	$( ".eq" ).empty();
+	$( ".eq" ).append( num1 + " + " + num2);
+	makeSlots(getlength(correctAns));
+	// save equation for results
+	eqArray.push([num1, num2]);
+}
+
+function getlength(number) {
+    return number.toString().length;
+}
+
+function makeSlots(num){
+	
+	$('#cardSlots').html( '' );
+// Create the card slots
+
+  for ( var i=1; i<=getlength(correctAns); i++ ) {
+	
+    $('<div>' + '<p></p>' + '</div>').data( 'number', i ).appendTo( '#cardSlots' ).attr( 'value', -1 ).attr( 'pos', i ).addClass('slot').droppable( {
+      accept: '#cardPile div',
+      hoverClass: 'hovered',
+      drop: handleCardDrop
+    } );
+  }
+}
+
+function runResults(){
+  var list = $("#resultsList").append('<ul></ul>').find('ul');
+  for (var i = 0; i < quizLength; i++)
+	{
+		// create results list
+    	list.append('<li>'+ eqArray[i][0] + ' + ' + eqArray[i][1] + ' = ' + choiceArray[i] + '</li>');
+  }  
+  
+  // set color for right and wrong answers
+  
+  var ancestor = document.getElementById('resultsList'),
+  descendents = ancestor.getElementsByTagName('li');
+	
+	for (var i = 0; i < resArray.length; i++){
+	console.log(resArray[i]);
+	
+		if(resArray[i] == "right"){
+			descendents[i].style.color = 'green';
+		} else if (resArray[i] == "wrong"){
+			descendents[i].style.color = 'red';
+		} 
+	}
+}
+
+function reset(){
+	eqNum = 1;
+	numArray = []; 
+	eqArray = [];
+	resArray = [];
+	choiceArray = [];
+	init();
+	$("#resultsList").empty();
+	genNums();
+}
+
+</script>
+<script>$('#makeMeDraggable').draggable();</script>
+</head> 
+
+<body>
+
+<!-- Start of first page: #one -->
+<div data-role="page" id="welcome">
+
+	<div data-role="header">
+		<h1>Math Busters 101 - Welcome</h1>
+	</div><!-- /header -->
+
+	<div data-role="content" >	
+		<h2>Welcome to Math Busters 101</h2>
+		
+		<h4>In this app you can practice your addition prowess by solving a bunch of random equations.</h4>	
+		
+		
+        <a href="#equations" data-role="button" onclick="genNums()"><img src="icon_play.png" width="120" height="120" alt=""/></a>
+	
+	</div><!-- /content -->
+	
+</div><!-- /page one -->
+
+
+<!-- Start of second page: #two -->
+<div data-role="page" id="equations" data-theme="a">
+
+	<div data-role="header">
+		<h1>Math Busters 101 - Equations</h1>
+	</div><!-- /header -->
+
+	<div data-role="content" data-theme="a">	
+        <div id="content">
+        <div class="counter"></div>
+         
+         <div id="equation" class="eq"></div>
+         <div id="seeResults">
+         	<p><a href="#results" data-role="button" data-theme="b" onClick="runResults()">Show results</a></p>
+         </div>
+         <div id="cardSlots"> </div>
+         <div id="cardPile"> 
+         </div>
+
+</div>
+
+</div>
+</div>
+
+<div data-role="page" id="results">
+
+	<div data-role="header">
+		<h1>Math Busters 101 - Results</h1>
+	</div><!-- /header -->
+
+	<div data-role="content" >	
+		<h2>Math Busters 101 Results</h2>
+		
+        <div id="resultsList"> </div>
+        
+        <div>
+         	<p><a href="#equations" data-role="button" data-theme="b" onClick="reset()">New game</a></p>
+         </div>
+	</div><!-- /content -->
+	
+</div><!-- /page 3 -->
+
+
+</body>
+</html>
